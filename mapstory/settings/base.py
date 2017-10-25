@@ -101,13 +101,8 @@ INSTALLED_APPS += (
     'health_check.storage',
     'health_check.contrib.celery',
     'health_check.contrib.s3boto_storage',
+    'django_statsd',
 )
-# DO NOT REMOVE (read commment above)
-INSTALLED_APPS += (
-    'mapstory.apps.activities',
-    'actstream',
-)
-# Thanks !
 
 MAPSTORY_APPS = (
 
@@ -115,8 +110,14 @@ MAPSTORY_APPS = (
     'mapstory.apps.flag', # - temporarily using this instead of the flag app for django because they need to use AUTH_USER_MODEL
 
 )
-
 INSTALLED_APPS += MAPSTORY_APPS
+
+# DO NOT REMOVE (read commment above)
+INSTALLED_APPS += (
+    'mapstory.apps.activities',
+    'actstream',
+)
+# Thanks !
 
 #
 # Template Settings
@@ -633,6 +634,10 @@ LOGGING = {
             'level': 'ERROR', 'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
         },
+        'statsd_handler': {
+            'level': 'ERROR',
+            'class': 'django_statsd.loggers.errors.StatsdHandler',
+        },
         'slack_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -641,7 +646,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "slack_admins"], "level": "ERROR", },
+            "handlers": ["console", "slack_admins", "statsd_handler"], "level": "ERROR", },
         "mapstory": {
             "handlers": ["console"], "level": "ERROR", },
         "gsconfig.catalog": {
@@ -691,6 +696,23 @@ SCHEMA_DOWNLOAD_EXCLUDE = [
     'date_xd',
     'date_parsed',
 ]
+
+#
+# Monitoring
+#
+STATSD_CLIENT = 'django_statsd.clients.normal'
+MIDDLEWARE_CLASSES = (
+    'django_statsd.middleware.GraphiteRequestTimingMiddleware',
+    'django_statsd.middleware.GraphiteMiddleware',
+    ) + MIDDLEWARE_CLASSES
+STATSD_PATCHES = [
+    'django_statsd.patches.db',
+    'django_statsd.patches.cache',
+]
+STATSD_HOST = 'telegraf'
+STATSD_PORT = 8125
+STATSD_MODEL_SIGNALS = True
+STATSD_CELERY_SIGNALS = True
 
 #
 # Feature toggles

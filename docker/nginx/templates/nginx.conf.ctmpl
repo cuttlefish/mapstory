@@ -90,4 +90,13 @@ http {
       gzip_types *;
     }
   }
+
+  # Status page
+  server {
+    listen 8090;
+    location /nginx_status {
+        stub_status on;
+        access_log on;
+    }
+  }
 }

@@ -1,6 +1,11 @@
 # Dev configuration
 version: '3.1'
 services:
+
+  grafana:
+    ports:
+      - "3000:3000"
+
   selenium:
     image: selenium/standalone-chrome
     links:
@@ -153,6 +158,8 @@ services:
       internal:
         aliases:
           - docker
+    ports:
+      - "8090:8090"
 
 volumes:
   postgres:
