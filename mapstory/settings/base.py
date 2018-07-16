@@ -32,12 +32,6 @@ import pyproj
 def str_to_bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
-def is_valid(v):
-    if v and len(v) > 0:
-        return True
-    else:
-        return False
-
 #
 # General Django development settings
 #
@@ -120,7 +114,6 @@ INSTALLED_APPS += (
     'mapstory.apps.initiatives',
     'mapstory.mapstory_profile',
     'mapstory.mapstories',
-    'allauth.socialaccount.providers.google',
 )
 # DO NOT REMOVE (read commment above)
 INSTALLED_APPS += (
@@ -128,11 +121,6 @@ INSTALLED_APPS += (
     'actstream',
 )
 # Thanks !
-
-if is_valid(os.getenv("ALLAUTH_GEOAXIS_HOST")):
-    INSTALLED_APPS += (
-        'mapstory.socialaccount.providers.geoaxis',
-    )
 
 MAPSTORY_APPS = (
 
@@ -170,7 +158,6 @@ TEMPLATES = [
                 'geonode.geoserver.context_processors.geoserver_urls',
                 'mapstory.context_processors.context',
                 'django_classification_banner.context_processors.classification',
-                'django.template.context_processors.request',
             ],
         },
     },
