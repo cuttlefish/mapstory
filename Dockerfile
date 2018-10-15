@@ -1,4 +1,4 @@
-FROM quay.io/mapstory/python-gdal:2.7.x-2.2.x
+FROM quay.io/mapstory/python-gdal:2.7.x-2.3.x
 LABEL maintainer="Tyler Battle <tbattle@boundlessgeo.com>"
 
 ENV MEDIA_ROOT /var/lib/mapstory/media
@@ -24,6 +24,10 @@ RUN set -ex \
 RUN set -ex \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
+        curl \
+        gcc \
+        git \
+        gnupg \
         unzip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -41,6 +45,9 @@ RUN set -ex \
         libgeos-dev \
         libjpeg-dev \
         libxml2-dev \
+        libxslt1-dev \
+        python2.7-dev \
+        zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install phantomjs
@@ -138,8 +145,16 @@ COPY --chown=mapstory:mapstory mapstory ./mapstory
 COPY --chown=mapstory:mapstory ./*.py ./
 RUN chown -R mapstory:mapstory $APP_PATH
 
-USER mapstory
+COPY --chown=mapstory:mapstory docker/django/run.sh $APP_PATH/docker/django/
+RUN ln -s $APP_PATH/docker/django/run.sh /opt/run.sh
 
+RUN set -ex \
+    && chown -R mapstory:mapstory $STATIC_ROOT \
+    && chown -R mapstory:mapstory $MEDIA_ROOT \
+    && mkdir -p $APP_PATH/cover \
+    && chown -R mapstory:mapstory $APP_PATH/cover
+
+USER mapstory
 WORKDIR $APP_PATH/mapstory/static
 RUN set -ex \
     && yarn install \
@@ -150,16 +165,6 @@ RUN set -ex \
     && yarn cache clean \
     && rm -rf ~/.cache/bower \
     && rm -rf /tmp/phantomjs
-
-USER root
-RUN set -ex \
-    && chown -R mapstory:mapstory $STATIC_ROOT \
-    && chown -R mapstory:mapstory $MEDIA_ROOT \
-    && mkdir -p $APP_PATH/cover \
-    && chown -R mapstory:mapstory $APP_PATH/cover
-
-COPY --chown=mapstory:mapstory docker/django/run.sh $APP_PATH/docker/django/
-RUN ln -s $APP_PATH/docker/django/run.sh /opt/run.sh
 
 USER mapstory
 VOLUME $STATIC_ROOT
